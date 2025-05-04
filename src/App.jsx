@@ -7,19 +7,27 @@ let isActive = false;
 function App() {
   const [activeStatus, setActiveStatus] = useState("Speech Recognition Is Not Active");
 
-  function startListening() {
+  const { transcript, resetTranscript } = useSpeechRecognition();
+
+  async function startListening() {
     if (!isActive) {
-      setActiveStatus("Speech Recognition Is Active");
-      SpeechRecognition.startListening({ continuous: true, language: "en-IN" });
-      isActive = true;
+      try {
+        // Request microphone access
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        setActiveStatus("Speech Recognition Is Active");
+        SpeechRecognition.startListening({ continuous: true, language: "en-IN" });
+        isActive = true;
+      } catch (error) {
+        console.error("Microphone permission denied or error occurred:", error);
+        setActiveStatus("Microphone permission denied");
+      }
     } else {
       setActiveStatus("Speech Recognition Is Not Active");
       isActive = false;
       SpeechRecognition.stopListening();
     }
   }
-
-  const { transcript, resetTranscript } = useSpeechRecognition();
 
   function copy(text) {
     navigator.clipboard.writeText(text);
